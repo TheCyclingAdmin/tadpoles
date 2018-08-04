@@ -2,16 +2,25 @@ import time
 from requests import session
 from tpcredentials import email, password, directory
 import hashlib
-import dropbox
+import sys
+import os
+
 
 payload = { 'email': email, 'password': password }
 url = 'https://www.tadpoles.com/auth/login'
-filedir = directory
+path = directory
 
 def main():
-    getimagelinks()
+    if not os.path.exists(path):
+        print(path, 'does not exist on your filesystem')
+        sys.exit(1)
+    elif not os.path.isdir(path):
+        print(path, 'is not a folder on your filesystem')
+        sys.exit(1)
+    else:
+        downloadimgs()
 
-def getimagelinks():
+def downloadimgs():
     with session() as c:
         c.post(url, data=payload)
         c.get('https://www.tadpoles.com/parents?app=parent&')
@@ -22,8 +31,8 @@ def getimagelinks():
                 result = c.get(link, stream=True)
                 if result.status_code == 200:
                     image = result.raw.read()
-                    filename = hashlib.md5(imgkey).hexdigest()
-                    open( filedir + filename + '.jpg', 'wb').write(image)
+                    filename = hashlib.md5(imgkey.encode('utf-8')).hexdigest() + '.jpg'
+                    open(path + filename, 'wb').write(image)
                     print("writing image to file {}".format(imgkey,filename))
 
 
