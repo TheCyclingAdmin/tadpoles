@@ -28,22 +28,7 @@ def getimagelinks():
 
 
 def uploaddropbox():
-
-    client = dropbox.client.DropboxClient( < auth_token >)
-    print('linked account: ', client.account_info())
-
-    f = open('working-draft.txt', 'rb')
-    response = client.put_file('/magnum-opus.txt', f)
-    print('uploaded: ', response)
-
-    folder_metadata = client.metadata('/')
-    print('metadata: ', folder_metadata)
-
-    f, metadata = client.get_file_and_metadata('/magnum-opus.txt')
-    out = open('magnum-opus.txt', 'wb')
-    out.write(f.read())
-    out.close()
-    print(metadata)
+    return
 
 if __name__== "__main__":
   main()
