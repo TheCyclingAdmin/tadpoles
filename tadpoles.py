@@ -3,7 +3,6 @@ from tpcredentials import email, password, dbxtoken, dbxfolder, localdir
 import hashlib
 import datetime
 import os
-import mimetypes
 import six
 import sys
 import time
@@ -16,7 +15,6 @@ baseurl = 'https://www.tadpoles.com/'
 dbx = dropbox.Dropbox(dbxtoken)
 folder = dbxfolder
 rootdir = os.path.expanduser(localdir)
-mimetypes.init()
 
 
 def main():
