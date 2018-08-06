@@ -11,10 +11,6 @@ import unicodedata
 from contextlib import contextmanager
 import dropbox
 
-
-if sys.version.startswith('2'):
-    input = raw_input  # noqa: E501,F821; pylint: disable=redefined-builtin,undefined-variable,useless-suppression
-
 auth = { 'email': email, 'password': password }
 baseurl = 'https://www.tadpoles.com/'
 dbx = dropbox.Dropbox(dbxtoken)
@@ -82,7 +78,7 @@ def main():
                 print('Skipping temporary directory:', name)
             elif name == '__pycache__':
                 print('Skipping generated directory:', name)
-            elif yesno('Descend into %s' % name, True, args):
+                print('Descend into %s' % name)
                 print('Keeping directory:', name)
                 keep.append(name)
             else:
@@ -160,7 +156,8 @@ def downloadimgs():
     with session() as c:
         c.post(baseurl + 'auth/login', data=auth)
         c.get(baseurl + 'parents?app=parent&')
-        jsondata = c.get(baseurl + 'remote/v1/events?direction=range&earliest_event_time=1&latest_event_time=99999999999&num_events=300&client=dashboard').json()
+        jsondata = c.get(
+            baseurl + 'remote/v1/events?direction=range&earliest_event_time=1&latest_event_time=99999999999&num_events=300&client=dashboard').json()
         for img in jsondata['events']:
             for imgkey in img['attachments']:
                 link = baseurl + 'remote/v1/attachment?key=' + imgkey
@@ -175,7 +172,7 @@ def downloadimgs():
                         ext = '.mp4'
                     image = result.raw.read()
                     filename = hashlib.md5(imgkey.encode('utf-8')).hexdigest() + ext
-                    if (os.path.isfile(localdir + filename )):
+                    if os.path.isfile(localdir + filename):
                         print("File {} already exists.".format(filename))
                     else:
                         print("writing image to file {}".format(filename))
@@ -183,7 +180,7 @@ def downloadimgs():
 
 
 @contextmanager
-def stopwatch(message):
+def stopwatch( message ):
     """Context manager to print how long a block of code took."""
     t0 = time.time()
     try:
@@ -192,5 +189,7 @@ def stopwatch(message):
         t1 = time.time()
         print('Total elapsed time for %s: %.3f' % (message, t1 - t0))
 
-if __name__== "__main__":
-  main()
+
+if __name__ == "__main__":
+    main()
+
