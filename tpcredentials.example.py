@@ -1,0 +1,5 @@
+email = 'email@domain.com'
+password = 'password'
+localdir = '/path/to/folder/'
+dbxtoken = 'dropboxapitoken'
+dbxfolder = 'dropboxfolder'
