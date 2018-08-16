@@ -1,4 +1,5 @@
 from requests import session
+from contextlib import contextmanager
 from tpcredentials import email, password, dbxtoken, dbxfolder, localdir
 import hashlib
 import datetime
@@ -7,23 +8,23 @@ import six
 import sys
 import time
 import unicodedata
-from contextlib import contextmanager
 import dropbox
+from dropbox import files, exceptions
 
-auth = { 'email': email, 'password': password }
+auth = {'email': email, 'password': password}
 baseurl = 'https://www.tadpoles.com/'
 dbx = dropbox.Dropbox(dbxtoken)
 folder = dbxfolder
 rootdir = os.path.expanduser(localdir)
-eventcount = '&num_events=300'
-firsteventtime = '&earliest_event_time=1'
-lasteventtime = '&latest_event_time=99999999999'
+paramdata = {"direction": "range", "client": "dashboard", "num_events": 300, "earliest_event_time": 1,
+             "latest_event_time": 99999999999}
+
 
 def main():
-    #Small sanity checks
+    # Small sanity checks
     checkfolders()
 
-    #Login and download latest images
+    # Login and download latest images
     downloadimgs()
 
     dbx = dropbox.Dropbox(dbxtoken)
@@ -83,7 +84,7 @@ def main():
         dirs[:] = keep
 
 
-def list_folder( dbx, folder, subfolder ):
+def list_folder(dbx, folder, subfolder):
     """List a folder.
     Return a dict mapping unicode filenames to
     FileMetadata|FolderMetadata entries.
@@ -97,15 +98,15 @@ def list_folder( dbx, folder, subfolder ):
             res = dbx.files_list_folder(path)
     except dropbox.exceptions.ApiError as err:
         print('Folder listing failed for', path, '-- assumed empty:', err)
-        return { }
+        return {}
     else:
-        rv = { }
+        rv = {}
         for entry in res.entries:
             rv[entry.name] = entry
         return rv
 
 
-def download( dbx, folder, subfolder, name ):
+def download(dbx, folder, subfolder, name):
     """Download a file.
     Return the bytes of the file, or None if it doesn't exist.
     """
@@ -123,7 +124,7 @@ def download( dbx, folder, subfolder, name ):
     return data
 
 
-def upload( dbx, fullname, folder, subfolder, name, overwrite=False ):
+def upload(dbx, fullname, folder, subfolder, name, overwrite=False):
     """Upload a file.
     Return the request response, or None in case of error.
     """
@@ -150,10 +151,11 @@ def upload( dbx, fullname, folder, subfolder, name, overwrite=False ):
 
 
 def downloadimgs():
+    global fileext
     with session() as c:
         c.post(baseurl + 'auth/login', data=auth)
         c.get(baseurl + 'parents?app=parent&')
-        jsondata = c.get(baseurl + 'remote/v1/events?direction=range&client=dashboard' + firsteventtime + lasteventtime + eventcount ).json()
+        jsondata = c.get(baseurl + 'remote/v1/events', params=paramdata).json()
         for img in jsondata['events']:
             for imgkey in img['attachments']:
                 link = baseurl + 'remote/v1/attachment?key=' + imgkey
@@ -161,18 +163,19 @@ def downloadimgs():
                 if result.status_code == 200:
                     content_type = result.headers['content-type']
                     if content_type == 'image/jpeg':
-                        ext = '.jpg'
+                        fileext = '.jpg'
                     elif content_type == 'image/png':
-                        ext = '.png'
+                        fileext = '.png'
                     elif content_type == 'video/mp4':
-                        ext = '.mp4'
+                        fileext = '.mp4'
                     image = result.raw.read()
-                    filename = hashlib.md5(imgkey.encode('utf-8')).hexdigest() + ext
+                    filename = hashlib.md5(imgkey.encode('utf-8')).hexdigest() + fileext
                     if os.path.isfile(localdir + filename):
                         print("File {} already exists.".format(filename))
                     else:
                         print("writing image to file {}".format(filename))
                         open(localdir + filename, 'wb').write(image)
+
 
 def checkfolders():
     print('Dropbox folder name:', folder)
@@ -184,8 +187,9 @@ def checkfolders():
         print(rootdir, 'is not a folder on your filesystem')
         sys.exit(1)
 
+
 @contextmanager
-def stopwatch( message ):
+def stopwatch(message):
     """Context manager to print how long a block of code took."""
     t0 = time.time()
     try:
@@ -197,4 +201,3 @@ def stopwatch( message ):
 
 if __name__ == "__main__":
     main()
-
