@@ -15,18 +15,15 @@ baseurl = 'https://www.tadpoles.com/'
 dbx = dropbox.Dropbox(dbxtoken)
 folder = dbxfolder
 rootdir = os.path.expanduser(localdir)
-
+eventcount = '&num_events=300'
+firsteventtime = '&earliest_event_time=1'
+lasteventtime = '&latest_event_time=99999999999'
 
 def main():
-    print('Dropbox folder name:', folder)
-    print('Local directory:', rootdir)
-    if not os.path.exists(rootdir):
-        print(rootdir, 'does not exist on your filesystem')
-        sys.exit(1)
-    elif not os.path.isdir(rootdir):
-        print(rootdir, 'is not a folder on your filesystem')
-        sys.exit(1)
+    #Small sanity checks
+    checkfolders()
 
+    #Login and download latest images
     downloadimgs()
 
     dbx = dropbox.Dropbox(dbxtoken)
@@ -65,7 +62,9 @@ def main():
                         print(name, 'is already synced [content match]')
                     else:
                         print(name, 'has changed since last sync')
-            upload(dbx, fullname, folder, subfolder, name)
+                        upload(dbx, fullname, folder, subfolder, name, overwrite=True)
+            else:
+                upload(dbx, fullname, folder, subfolder, name)
 
         # Then choose which subdirectories to traverse.
         keep = []
@@ -154,8 +153,7 @@ def downloadimgs():
     with session() as c:
         c.post(baseurl + 'auth/login', data=auth)
         c.get(baseurl + 'parents?app=parent&')
-        jsondata = c.get(
-            baseurl + 'remote/v1/events?direction=range&earliest_event_time=1&latest_event_time=99999999999&num_events=300&client=dashboard').json()
+        jsondata = c.get(baseurl + 'remote/v1/events?direction=range&client=dashboard' + firsteventtime + lasteventtime + eventcount ).json()
         for img in jsondata['events']:
             for imgkey in img['attachments']:
                 link = baseurl + 'remote/v1/attachment?key=' + imgkey
@@ -176,6 +174,15 @@ def downloadimgs():
                         print("writing image to file {}".format(filename))
                         open(localdir + filename, 'wb').write(image)
 
+def checkfolders():
+    print('Dropbox folder name:', folder)
+    print('Local directory:', rootdir)
+    if not os.path.exists(rootdir):
+        print(rootdir, 'does not exist on your filesystem')
+        sys.exit(1)
+    elif not os.path.isdir(rootdir):
+        print(rootdir, 'is not a folder on your filesystem')
+        sys.exit(1)
 
 @contextmanager
 def stopwatch( message ):
