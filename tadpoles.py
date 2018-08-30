@@ -18,7 +18,7 @@ baseurl = 'https://www.tadpoles.com/'
 dbx = dropbox.Dropbox(dbxtoken)
 folder = dbxfolder
 rootdir = os.path.expanduser(localdir)
-paramdata = {"direction": "range", "client": "dashboard", "num_events": 999, "earliest_event_time": 1,
+paramdata = {"direction": "range", "client": "dashboard", "num_events": 300, "earliest_event_time": 1,
              "latest_event_time": 99999999999}
 
 
