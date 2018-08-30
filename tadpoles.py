@@ -1,6 +1,7 @@
 from requests import session
 from contextlib import contextmanager
-from tpcredentials import email, password, dbxtoken, dbxfolder, localdir
+from tpcredentials import email, password, dbxtoken, dbxfolder, localdir, \
+    gmailuser, gmailpwd, recipients, kidsname, dropfolder, droppreview
 import hashlib
 import datetime
 import os
@@ -10,13 +11,14 @@ import time
 import unicodedata
 import dropbox
 from dropbox import files, exceptions
+import smtplib
 
 auth = {'email': email, 'password': password}
 baseurl = 'https://www.tadpoles.com/'
 dbx = dropbox.Dropbox(dbxtoken)
 folder = dbxfolder
 rootdir = os.path.expanduser(localdir)
-paramdata = {"direction": "range", "client": "dashboard", "num_events": 300, "earliest_event_time": 1,
+paramdata = {"direction": "range", "client": "dashboard", "num_events": 999, "earliest_event_time": 1,
              "latest_event_time": 99999999999}
 
 
@@ -65,6 +67,7 @@ def main():
                         print(name, 'has changed since last sync')
                         upload(dbx, fullname, folder, subfolder, name, overwrite=True)
             else:
+                send_email(name)
                 upload(dbx, fullname, folder, subfolder, name)
 
         # Then choose which subdirectories to traverse.
@@ -175,6 +178,27 @@ def downloadimgs():
                     else:
                         print("writing image to file {}".format(filename))
                         open(localdir + filename, 'wb').write(image)
+
+
+def send_email(body):
+    sender = gmailuser
+    sendto = recipients
+    subject = "New {} photo uploaded to Dropbox".format(kidsname)
+    bodytext = 'Photo uploaded to {}'.format(dropfolder) + "\n\n\n Filename:" + body + \
+               "\n\n Link {}".format(droppreview) + body
+
+    message = """From: %s\nTo: %s\nSubject: %s\n\n%s
+    """ % (sender, ", ".join(sendto), subject, bodytext)
+    try:
+        server = smtplib.SMTP("smtp.gmail.com", 587)
+        server.ehlo()
+        server.starttls()
+        server.login(gmailuser, gmailpwd)
+        server.sendmail(sender, sendto, message)
+        server.close()
+        print('successfully sent the email')
+    except smtplib.SMTPException as serr:
+        print('failed to send email, Exeption: {}'.format(serr))
 
 
 def checkfolders():
