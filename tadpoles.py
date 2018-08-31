@@ -50,11 +50,8 @@ def main():
                 print('Skipping generated file:', name)
             elif nname in listing:
                 md = listing[nname]
-                mtime = os.path.getmtime(fullname)
-                mtime_dt = datetime.datetime(*time.gmtime(mtime)[:6])
                 size = os.path.getsize(fullname)
-                if (isinstance(md, dropbox.files.FileMetadata) and
-                        mtime_dt == md.client_modified and size == md.size):
+                if (isinstance(md, dropbox.files.FileMetadata) and size == md.size):
                     print(name, 'is already synced [stats match]')
                 else:
                     print(name, 'exists with different stats, downloading')
