@@ -18,6 +18,7 @@ baseurl = 'https://www.tadpoles.com/'
 dbx = dropbox.Dropbox(dbxtoken)
 folder = dbxfolder
 rootdir = os.path.expanduser(localdir)
+today = datetime.date.today()
 paramdata = {"direction": "range", "client": "dashboard", "num_events": 999, "earliest_event_time": 1,
              "latest_event_time": 99999999999}
 
@@ -88,10 +89,6 @@ def main():
 
 
 def list_folder(dbx, folder, subfolder):
-    """List a folder.
-    Return a dict mapping unicode filenames to
-    FileMetadata|FolderMetadata entries.
-    """
     path = '/%s/%s' % (folder, subfolder.replace(os.path.sep, '/'))
     while '//' in path:
         path = path.replace('//', '/')
@@ -110,9 +107,6 @@ def list_folder(dbx, folder, subfolder):
 
 
 def download(dbx, folder, subfolder, name):
-    """Download a file.
-    Return the bytes of the file, or None if it doesn't exist.
-    """
     path = '/%s/%s/%s' % (folder, subfolder.replace(os.path.sep, '/'), name)
     while '//' in path:
         path = path.replace('//', '/')
@@ -128,9 +122,6 @@ def download(dbx, folder, subfolder, name):
 
 
 def upload(dbx, fullname, folder, subfolder, name, overwrite=False):
-    """Upload a file.
-    Return the request response, or None in case of error.
-    """
     path = '/%s/%s/%s' % (folder, subfolder.replace(os.path.sep, '/'), name)
     while '//' in path:
         path = path.replace('//', '/')
@@ -183,7 +174,7 @@ def downloadimgs():
 def send_email(body):
     sender = gmailuser
     sendto = recipients
-    subject = "New {} photo uploaded to Dropbox".format(kidsname)
+    subject = "{} {} photo uploaded to Dropbox".format(today, kidsname)
     bodytext = 'Photo uploaded to {}'.format(dropfolder) + "\n\n\n Filename:" + body + \
                "\n\n Link {}".format(droppreview) + body
 
