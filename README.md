@@ -1,7 +1,8 @@
 # tadpoles
-Download images from the tadpoles site for your kids.
+* Download images from the tadpoles site for your kids.
+* Syncs up / down to / from a folder on dropbox.
+* e-mails list of recipients for any new pictures found with dropbox link
 
-Keeps the drop box folder synced both ways based on:\
-https://github.com/dropbox/dropbox-sdk-python/blob/master/example/updown.py
 
-I'll sometimes take pics of my kid at school and want to keep it all grouped together in the same folder so Dropbox had a perfect example for this.
+TODO:  
+Concatenate email link strings to email once for all pictures with included links instead of once for each picture.
