@@ -1,6 +1,5 @@
-# Tadpoles https://www.tadpoles.com/
-# Dropbox Sync 
-# E-mail notifications for new pictures / videos
+# Tadpoles Dropbox Sync https://www.tadpoles.com/
+## E-mail notifications for new pictures / videos
 
 * Download images from the tadpoles site for your kids.
 * Syncs up / down to / from a folder on dropbox.
